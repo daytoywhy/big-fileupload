@@ -66,23 +66,32 @@ const uploadChunks = async(chunks:Blob[],existChunks:string[]) => {
   })
   const max = 6 //最大并发数
   let index = 0
+  let count = 0 
   const taskPool:any = []
-  while(index < formDatas.length){
+  new Promise(async(resolve)=>{
+    while(index < formDatas.length){
      const task = fetch('http://localhost:3001/upload',{
        method: 'POST',
        body: formDatas[index]
      })
-     taskPool.splice(taskPool.findIndex((item:any) => item === task),1)
+     const handler = () => {
+      taskPool.splice(taskPool.indexOf(task),1)
+      count++
+      if(count === formDatas.length){
+        resolve()
+      }
+     }
+     task.then(res=> handler(res))
+     
      taskPool.push(task)
      if(taskPool.length === max){
       await Promise.race(taskPool)
      }
      index++
   }
- await Promise.all(taskPool)
-  mergeRequest()
-
-  //通知服务器合并文件
+  }).then(()=>{
+    mergeRequest()
+  })
 }
 //通知服务器合并文件
 const mergeRequest = () => {
