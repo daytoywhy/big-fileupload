@@ -72,7 +72,7 @@ const uploadChunks = async(chunks:Blob[],existChunks:string[]) => {
        method: 'POST',
        body: formDatas[index]
      })
-     taskPool.splice(taskPool.findIndex((item:any) => item === task))
+     taskPool.splice(taskPool.findIndex((item:any) => item === task),1)
      taskPool.push(task)
      if(taskPool.length === max){
       await Promise.race(taskPool)
